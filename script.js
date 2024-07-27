@@ -1,57 +1,193 @@
-// variables globales
-const alimentoA = 100
-const alimentoB = 200
-const alimentoC = 1000
+const db = {
+    methods: {
+        find: (id) => {
+            return db.items.find((item) => item.id === id);
+        },
+        remove: (items) => {
+            items.forEach((item) => {
+                const product = db.methods.find(item.id);
+                product.qty = product.qty - item.qty;
+            });
 
-let cantidad;
-let marcaAlimento;
-let resultado;
+            console.log(db);
+        },
+    },
+    items: [
+        {
+            id: 0,
+            title: "Gomitas",
+            price: 5000,
+            qty: 150,
+            Image: './assets/img/Gomitas.jpg',
+        },
+        {
+            id: 1,
+            title: "Ramo de chocolates",
+            price: 15000,
+            qty: 50,
+            Image: './assets/img/ramo-chocolates.png'
+        },
+        {
+            id: 2,
+            title: "Pack de golosinas",
+            price: 7000,
+            qty: 20,
+            Image: './assets/img/Golosina-01.png'
+        },
+    ],
+};
 
-//operacion multiplicar
-function multiplicar(valor1, valor2) {
-    const resultado = valor1 * valor2;
-    return resultado;
+const shoppingCart = {
+    items: [],
+    methods: {
+        add: (id, qty) => {
+            const cartItem = shoppingCart.methods.get(id);
+            if (cartItem) {
+                if (shoppingCart.methods.hasInventory(id, qty + cartItem.qty)) {
+                    cartItem.qty++;
+                } else {
+                    alert("No hay más inventario");
+                }
+            } else {
+                shoppingCart.items.push({ id, qty });
+            }
+        },
+        remove: (id, qty) => {
+            const cartItem = shoppingCart.methods.get(id);
+
+            if (cartItem.qty - 1 > 0) {
+                cartItem.qty--;
+            } else {
+                shoppingCart.items = shoppingCart.items.filter(
+                    (item) => item.id !== id
+                );
+            }
+        },
+        count: () => {
+            return shoppingCart.items.reduce((acc, item) => acc + item.qty, 0);
+        },
+        get: (id) => {
+            const index = shoppingCart.items.findIndex((item) => item.id === id);
+            return index >= 0 ? shoppingCart.items[index] : null;
+        },
+        getTotal: () => {
+            let total = 0;
+            shoppingCart.items.forEach((item) => {
+                const found = db.methods.find(item.id);
+                total += found.price * item.qty;
+            });
+            return total;
+        },
+        hasInventory: (id, qty) => {
+            return db.items.find((item) => item.id === id).qty - qty >= 0;
+        },
+        purchase: () => {
+            db.methods.remove(shoppingCart.items);
+        },
+    },
+};
+
+renderStore();
+
+function renderStore() {
+    const html = db.items.map((item) => {
+        return `
+          <div class="item">
+              <img src="${item.Image}" alt="${item.title}">
+              <div class="title">${item.title}</div>
+              <div class="price">${numberToCurrency(item.price)}</div>
+              <div class="qty">${item.qty} units</div>
+              <div class="actions"><button class="add" data-id="${item.id
+            }">Añadir al Carrito</button></div>
+          </div>`;
+    });
+
+    document.querySelector("#store-container").innerHTML = html.join("");
+
+    document.querySelectorAll(".item .actions .add").forEach((button) => {
+        button.addEventListener("click", (e) => {
+            const id = parseInt(button.getAttribute("data-id"));
+            const item = db.methods.find(id);
+
+            if (item && item.qty - 1 > 0) {
+                shoppingCart.methods.add(id, 1);
+                console.log(db, shoppingCart);
+                renderShoppingCart();
+            } else {
+                alert("Ya no hay existencia de ese artículo");
+            }
+        });
+    });
 }
-//paso 1: que nos diga por prompt la cantidad de kilos de alimento para mascota que quiere llevar, teniendo en cuenta que 0. cierra el ciclo.
-//paso 2: elija la marca de alimento que desee comprar, con A B y C.
 
-while (cantidad != 0) {
-    cantidad = parseInt(prompt("Ingresar cantidad de alimentos de comida vendido, recuerde que 0 cero, termina la carga"));
+function renderShoppingCart() {
+    const html = shoppingCart.items.map((item) => {
+        const dbItem = db.methods.find(item.id);
+        return `
+              <div class="item">
+                  <div class="title">${dbItem.title}</div>
+                  <div class="price">${numberToCurrency(dbItem.price)}</div>
+                  <div class="qty">${item.qty} units</div>
+                  <div class="subtotal">Subtotal: ${numberToCurrency(
+            item.qty * dbItem.price
+        )}</div>
+                  <div class="actions">
+                      <button class="addOne" data-id="${dbItem.id}">+</button>
+                      <button class="removeOne" data-id="${dbItem.id}">-</button>
+                  </div>
+              </div>
+          `;
+    });
+    const closeButton = `
+    <div class="cart-header">
+      <button id="bClose">Close</button>
+    </div>`;
+    const purchaseButton =
+        shoppingCart.items.length > 0
+            ? `<div class="cart-actions">
+      <button id="bPurchase">Terminar compra</button>
+    </div>`
+            : "";
+    const total = shoppingCart.methods.getTotal();
+    const totalDiv = `<div class="total">Total: ${numberToCurrency(total)}</div>`;
+    document.querySelector("#shopping-cart-container").innerHTML =
+        closeButton + html.join("") + totalDiv + purchaseButton;
 
-    if (cantidad === 0) {
-        break;
-    }
+    document.querySelector("#shopping-cart-container").classList.remove("hide");
+    document.querySelector("#shopping-cart-container").classList.add("show");
 
-    marcaAlimento = prompt("Ingrese la marca de alimento que desee:\n\ -Si quiere alimento marca A ingrese = A \n\ -Si quiere alimento marca B ingrese = B \n\ -Si quiere alimento marca C ingrese = C");
+    document.querySelectorAll(".addOne").forEach((button) => {
+        button.addEventListener("click", (e) => {
+            const id = parseInt(button.getAttribute("data-id"));
+            shoppingCart.methods.add(id, 1);
+            renderShoppingCart();
+        });
+    });
 
-    switch (marcaAlimento) {
-        case "A":
-            resultado = multiplicar(alimentoA, cantidad);
-            alert("Debe abonar $ " + resultado + " por su compra de alimento marca A");
-            break;
-        case "B":
-            resultado = multiplicar(alimentoB, cantidad);
-            alert("Debe abonar $ " + resultado + " por su compra de alimento marca B");
-            break;
-        case "C":
-            resultado = multiplicar(alimentoC, cantidad);
-            alert("Debe abonar $ " + resultado + " por su compra de alimento marca C");
-            break;
-        default:
-            alert("Operacion Invalida");
-            break;
-    }
+    document.querySelectorAll(".removeOne").forEach((button) => {
+        button.addEventListener("click", (e) => {
+            const id = parseInt(button.getAttribute("data-id"));
+            shoppingCart.methods.remove(id, 1);
+            renderShoppingCart();
+        });
+    });
 
-    if (cantidad >= 10) {
-        valorEnvio = 0
-        alert("Su costo de envio es $" + valorEnvio);
+    document.querySelector("#bClose").addEventListener("click", (e) => {
+        document.querySelector("#shopping-cart-container").classList.remove("show");
+        document.querySelector("#shopping-cart-container").classList.add("hide");
+    });
+    const bPurchase = document.querySelector("#bPurchase");
+    if (bPurchase) {
+        bPurchase.addEventListener("click", (e) => {
+            shoppingCart.methods.purchase();
+        });
     }
-    else if (cantidad >= 5) {
-        valorEnvio = 100
-        alert("Su costo de envio es $" + valorEnvio);
-    }
-    else {
-        valorEnvio = 200
-        alert("Su costo de envio es $" + valorEnvio);
-    }
+}
+
+function numberToCurrency(n) {
+    return new Intl.NumberFormat("es-CO", {
+        maximumSignificantDigits: 2,
+        style: "currency",
+        currency: "COP",
+    }).format(n);
 }
