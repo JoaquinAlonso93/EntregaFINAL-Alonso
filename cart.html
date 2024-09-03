@@ -6,47 +6,41 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="cart.css">
     <script src="./js/licores.js"></script>
     <script src="./js/cartService.js" defer></script>
-    <script src="./js/index.js" defer></script>
+    <script src="./js/cart.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <title>Mayorista Caramelitos</title>
+    <title>Licorera Super - Carrito</title>
 </head>
 
 <body>
     <header>
-
         <nav>
             <a href="./index.html"><img src="./img/logo.png" alt="Logo" id="logo"></a>
-            <h1 id="miElemento"></h1>
             <div>
-                <a href="#">Productos</a>
-                <!-- <a href="#">Ruta</a> -->
+                <a href="./index.html">Productos</a>
+
                 <a href="./cart.html" id="cart"><img src="./img/iconos/shopping-cart.png" alt=""><span
                         id="cuenta-carrito">0</span></a>
             </div>
         </nav>
-
     </header>
     <main>
-        <section id="productos-container">
+        <p id="carrito-vacio">Ups! El carrito está vacío, <a href="./index.html">elige algunos productos</a></p>
+        <section id="cart-container">
         </section>
-        <!-- prueba api -->
-        <section id="contenido" class="contenido prueba">
-            <div class="col">
-                <h2 id="titulo-2">Porductos Más Vendidos</h2>
-                <ul id="lista-productos">
-                    <!-- Contenido que se va a completar en JS -->
-                </ul>
-            </div>
+        <section id="totales">
+            <p>Total unidades: <span id="cantidad">0</span></p>
+            <p>Total precio: $<span id="precio">0</span></p>
+            <button id="comprar">Comprar</button>
+            <button id="reiniciar">Reiniciar</button>
         </section>
     </main>
     <footer>
-        <p>Realizado por: Joaquin Alonso</p>
+        <p>Creado por: Joaquin Alonso</p>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-
 </body>
 
 </html>
